@@ -1,14 +1,15 @@
 """
 VISION AI Assistant - Application Launcher Module
-Open applications by name using a registry + smart search.
+Open applications by name using a registry + smart search (Windows & Linux).
 """
 import os
+import sys
 import subprocess
 import glob
+import shutil
 from pathlib import Path
 
-# ─── Application Registry ───────────────────────────────
-# Maps common names to executable paths or commands
+# ─── Windows Application Registry ───────────────────────
 APP_REGISTRY = {
     # Browsers
     "brave": r"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe",
@@ -54,10 +55,37 @@ APP_REGISTRY = {
     "steam": r"C:\Program Files (x86)\Steam\steam.exe",
 }
 
+# ─── Linux Application Mapping ─────────────────────────
+LINUX_APP_MAP = {
+    "chrome": "google-chrome",
+    "google chrome": "google-chrome",
+    "firefox": "firefox",
+    "brave": "brave-browser",
+    "vscode": "code",
+    "visual studio code": "code",
+    "notepad": "gedit",
+    "text editor": "gedit",
+    "calculator": "gnome-calculator",
+    "paint": "gimp",
+    "file explorer": "nautilus",
+    "explorer": "nautilus",
+    "terminal": "gnome-terminal",
+    "spotify": "spotify",
+    "discord": "discord",
+    "telegram": "telegram-desktop",
+    "whatsapp": "whatsapp-for-linux",
+    "vlc": "vlc",
+    "steam": "steam",
+}
+
 
 def open_application(app_name: str) -> str:
-    """Open an application by name."""
+    """Open an application by name (Windows & Linux)."""
     app_name_lower = app_name.lower().strip()
+
+    if sys.platform != "win32":
+        return _open_application_linux(app_name_lower)
+
     username = os.getenv("USERNAME", "")
 
     # 1. Check the registry
@@ -123,3 +151,48 @@ def open_application(app_name: str) -> str:
         pass
 
     return f"Could not find application: {app_name}. Try providing the full path."
+
+
+def _open_application_linux(app_name_lower: str) -> str:
+    # 1. Check in our mapping
+    cmd = LINUX_APP_MAP.get(app_name_lower, app_name_lower)
+
+    # 2. Check if the binary is in PATH
+    if shutil.which(cmd):
+        try:
+            subprocess.Popen([cmd], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return f"Opened {cmd} on Linux"
+        except Exception as e:
+            return f"Failed to launch {cmd}: {e}"
+
+    # 3. Search .desktop entries
+    desktop_search_paths = [
+        "/usr/share/applications/**/*.desktop",
+        os.path.expanduser("~/.local/share/applications/**/*.desktop")
+    ]
+    
+    for pattern in desktop_search_paths:
+        for df in glob.glob(pattern, recursive=True):
+            filename = os.path.basename(df).lower()
+            if app_name_lower in filename:
+                # Try gtk-launch first
+                app_id = os.path.basename(df).replace(".desktop", "")
+                try:
+                    subprocess.Popen(["gtk-launch", app_id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    return f"Opened {app_name_lower} via gtk-launch"
+                except Exception:
+                    pass
+
+                # Fallback to xdg-open
+                try:
+                    subprocess.Popen(["xdg-open", df], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    return f"Opened {app_name_lower} via xdg-open"
+                except Exception:
+                    pass
+
+    # 4. Try running it as shell command directly
+    try:
+        subprocess.Popen(app_name_lower, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return f"Attempted to run '{app_name_lower}' in shell"
+    except Exception as e:
+        return f"Could not find or open application '{app_name_lower}' on Linux: {e}"

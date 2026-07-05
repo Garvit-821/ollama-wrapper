@@ -39,10 +39,10 @@ from modules.system_control import control_volume, control_brightness, media_con
 from modules.file_browser import search_files, open_file, list_directory
 from modules.app_launcher import open_application
 from modules.typing_module import type_text
-from modules.web_browser import open_website, web_search, google_search
+from modules.web_browser import open_website, google_search
 from modules.youtube_module import search_youtube, play_music
 from modules.messaging import send_whatsapp, send_email
-from modules.web_search import get_weather, get_news, compare_prices
+from modules.web_search import get_weather, get_news, compare_prices, web_search, read_webpage
 from modules.screenshot_module import take_screenshot
 from modules.notes_module import manage_notes
 from modules.code_generator import generate_code
@@ -320,7 +320,10 @@ class VisionAssistant:
                 return open_website(**args)
 
             elif name == "web_search":
-                return google_search(**args)
+                return web_search(**args)
+
+            elif name == "read_webpage":
+                return read_webpage(**args)
 
             # ─── YouTube & Music ─────────────────────────
             elif name == "search_youtube":

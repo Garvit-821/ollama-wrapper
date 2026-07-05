@@ -1,6 +1,13 @@
+<<<<<<< HEAD
 #                    VISION AI ASSISTANT                    
 #            Advanced AI Desktop Assistant v1.0              
 
+=======
+# ╔═══════════════════════════════════════════════════════════╗
+# ║                    VISION AI ASSISTANT                    ║
+# ║           Advanced AI Desktop Assistant v1.0              ║
+# ╚═══════════════════════════════════════════════════════════╝
+>>>>>>> 26e9256 (feat: add programmatic web surfing and cross-platform Linux support)
 
 <p align="center">
   <img src="https://img.shields.io/badge/Ollama-phi3%3Amini-brightgreen?style=for-the-badge&logo=ollama&logoColor=white" alt="Ollama phi3:mini" />
@@ -43,7 +50,12 @@ VISION is equipped with **20+ capabilities** broken down into modular control su
 *   **Registry-Based App Launcher:** Quick launch capability for 20+ preset desktop applications (Notepad, Chrome, Spotify, Discord, VSCode, Excel, etc.) with automatic Start Menu shortcut searching as fallback.
 
 ### 🌐 Web & Communications
+<<<<<<< HEAD
 *   **Search Engines:** Query Google, Wikipedia, or run general web requests.
+=======
+*   **Programmatic Web Surfing & Search:** Perform DuckDuckGo searches and read webpage content directly inside the terminal (enables VISION to surf the internet and digest information without spawning browser windows).
+*   **Browser Integrations:** Open target websites in default or Brave browser.
+>>>>>>> 26e9256 (feat: add programmatic web surfing and cross-platform Linux support)
 *   **Media Streaming:** Query YouTube videos or play specific music on YouTube/YT Music.
 *   **Real-time Information:** Pull current weather data, live news topics, and compare prices across e-commerce listings.
 *   **WhatsApp Automation:** Send messages to registered contacts via WhatsApp Web.
@@ -95,6 +107,10 @@ ollama-wrapper-vision/
 ├── config.py               # Path definitions, theme colors, system prompts
 ├── main.py                 # Core orchestration thread, event loops, CLI args
 ├── test_vision.py          # Unified suite checking all 13 modules
+<<<<<<< HEAD
+=======
+├── test_surfing.py         # Verification check for web search and page scraping
+>>>>>>> 26e9256 (feat: add programmatic web surfing and cross-platform Linux support)
 ├── requirements.txt        # Package dependencies
 └── .env                    # Secret keys and custom system paths
 ```
@@ -176,8 +192,13 @@ Once the dashboard boots, you will see the animated M.O.D.O.K.-style face panel 
 *   `voice` — Manually launches voice capture.
 *   `voice diagnostics` — Runs speaker/microphone diagnostics and outputs configuration status.
 *   `clear` — Resets active conversation logs and clears the LLM memory context.
+<<<<<<< HEAD
 *   `startup install` — Adds VISION to your Windows Startup registry.
 *   `startup uninstall` — Removes VISION from the Windows Startup registry.
+=======
+*   `startup install` — Adds VISION to your system startup (Windows Startup registry or Linux autostart folder).
+*   `startup uninstall` — Removes VISION from the system startup.
+>>>>>>> 26e9256 (feat: add programmatic web surfing and cross-platform Linux support)
 *   `quit` / `exit` — Shuts down the terminal.
 
 ---
@@ -211,6 +232,7 @@ graph TD
 
 ## 🧪 Running Verification Tests
 
+<<<<<<< HEAD
 The project includes an automatic test suite `test_vision.py` that verifies core functionality and checks all modules, configuration files, and state changes:
 
 ```bash
@@ -218,6 +240,19 @@ python test_vision.py
 ```
 
 This checks:
+=======
+The project includes two automatic test suites:
+1. `test_vision.py` verifies core assistant functionality, configuration, and module imports:
+   ```bash
+   python test_vision.py
+   ```
+2. `test_surfing.py` validates the programmatic web search and webpage scraping:
+   ```bash
+   python test_surfing.py
+   ```
+
+### Core Tests Validate:
+>>>>>>> 26e9256 (feat: add programmatic web surfing and cross-platform Linux support)
 - ASCII Face (6 distinct animation states)
 - Notes CRUD and search mechanics
 - Plan creation and task updates

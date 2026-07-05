@@ -4,6 +4,7 @@ Real-time info: weather, news, price comparison, general search.
 """
 import requests
 from bs4 import BeautifulSoup
+import urllib.parse
 import config
 from modules.web_browser import open_website
 
@@ -129,3 +130,87 @@ def compare_prices(product: str) -> str:
         results.append("\nCould not open any platforms. Check your internet connection.")
 
     return "\n".join(results)
+
+
+def web_search(query: str) -> str:
+    """Search the internet using DuckDuckGo HTML search and return top results."""
+    url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code != 200:
+            return f"Error searching the web: HTTP Status {response.status_code}"
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+        results = []
+        for result in soup.find_all('div', class_='result')[:5]:
+            title_elem = result.find('a', class_='result__url')
+            snippet_elem = result.find('a', class_='result__snippet')
+            if title_elem and snippet_elem:
+                title = title_elem.get_text(strip=True)
+                raw_link = title_elem['href']
+                
+                # Resolve DuckDuckGo redirect link to direct URL
+                link = raw_link
+                if "uddg=" in raw_link:
+                    try:
+                        parsed = urllib.parse.urlparse(raw_link)
+                        query_params = urllib.parse.parse_qs(parsed.query)
+                        actual_url = query_params.get("uddg", [None])[0]
+                        if actual_url:
+                            link = actual_url
+                    except Exception:
+                        pass
+                
+                if link.startswith("//"):
+                    link = "https:" + link
+                    
+                snippet = snippet_elem.get_text(strip=True)
+                results.append(f"Title: {title}\nURL: {link}\nSnippet: {snippet}\n")
+        
+        if not results:
+            return "No results found on the web."
+            
+        return "\n".join(results)
+    except Exception as e:
+        return f"Error executing web search: {str(e)}"
+
+
+def read_webpage(url: str) -> str:
+    """Fetch the text content of a web page and return it."""
+    if not url.startswith(("http://", "https://")):
+        url = "https://" + url
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    try:
+        response = requests.get(url, headers=headers, timeout=15)
+        if response.status_code != 200:
+            return f"Error: HTTP {response.status_code} trying to fetch the page."
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Remove scripts, styles, metadata, navigation, headers, footers
+        for s in soup(["script", "style", "meta", "noscript", "header", "footer", "nav"]):
+            s.decompose()
+
+        # Extract text from paragraphs, list items, and headers
+        chunks = []
+        for elem in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'li']):
+            text = elem.get_text(strip=True)
+            if text and len(text) > 10:
+                chunks.append(text)
+
+        # Join and truncate content
+        content = "\n".join(chunks)
+        max_chars = 4000
+        if len(content) > max_chars:
+            content = content[:max_chars] + "\n... [Content Truncated due to size] ..."
+        
+        return content if content.strip() else "The webpage did not contain any readable text content."
+    except Exception as e:
+        return f"Error reading page {url}: {str(e)}"
+

@@ -244,8 +244,22 @@ TOOL_DEFINITIONS = [
         "type": "function",
         "function": {
             "name": "web_search",
-            "description": "Search the internet for any information.",
+            "description": "Search the internet programmatically for real-time information, news, or answers. The results will be returned as text to you.",
             "parameters": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_webpage",
+            "description": "Read the main text content of a specific webpage/URL. Use this to surf deeper after searching or when a direct link is provided.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {"type": "string", "description": "The exact URL to retrieve content from"}
+                },
+                "required": ["url"]
+            },
         },
     },
     {
@@ -532,6 +546,9 @@ class LLMEngine:
 
         elif function_name == "open_website" and not args.get("url"):
             args["url"] = self._extract_search_query(user_message, ["open", "go to", "launch"])
+
+        elif function_name == "read_webpage" and not args.get("url"):
+            args["url"] = self._extract_search_query(user_message, ["read", "read webpage", "scrape", "open webpage", "fetch"])
 
         elif function_name == "open_application" and not args.get("app_name"):
             args["app_name"] = self._extract_search_query(user_message, ["open", "launch", "start"])

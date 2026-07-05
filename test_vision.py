@@ -74,11 +74,12 @@ test("App Launcher - 29 apps registered", t5)
 def t6():
     from core.llm_engine import TOOL_DEFINITIONS
     names = [t['function']['name'] for t in TOOL_DEFINITIONS]
-    assert len(names) == 21
+    assert len(names) == 22
     assert 'control_volume' in names
     assert 'send_whatsapp' in names
     assert 'explain_concept' in names
-test("LLM Engine - 21 tool definitions", t6)
+    assert 'read_webpage' in names
+test("LLM Engine - 22 tool definitions", t6)
 
 # Test 7: TTS
 def t7():
