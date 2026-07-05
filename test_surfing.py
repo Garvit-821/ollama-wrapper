@@ -13,7 +13,7 @@ def test_web_search():
     assert "Title:" in results
     assert "URL:" in results
     assert "Snippet:" in results
-    print("  [PASS] Web search programmatically returns results.")
+    print("  [PASS] Web search programmatically returns results.") 
     
     # Extract first URL to test page reader
     lines = results.split("\n")

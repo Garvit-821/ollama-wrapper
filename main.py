@@ -48,6 +48,7 @@ from modules.notes_module import manage_notes
 from modules.code_generator import generate_code
 from modules.planner import manage_plan
 from modules.knowledge import explain_concept
+from modules.terminal_executor import execute_command
 
 
 class VisionAssistant:
@@ -372,6 +373,10 @@ class VisionAssistant:
             # ─── Typing ──────────────────────────────────
             elif name == "type_text":
                 return type_text(**args)
+
+            # ─── Terminal Executor ───────────────────────
+            elif name == "execute_command":
+                return execute_command(**args)
 
             else:
                 return f"Unknown function: {name}"

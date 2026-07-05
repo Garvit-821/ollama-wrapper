@@ -278,6 +278,20 @@ TOOL_DEFINITIONS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "execute_command",
+            "description": "Execute a safe terminal command (bash on Linux, powershell on Windows) to compile code, run test suites, check git status, run custom python scripts, or run command line programs. The result will be returned in the log.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {"type": "string", "description": "The exact shell command to execute."}
+                },
+                "required": ["command"]
+            }
+        }
+    },
 ]
 
 TOOL_SCHEMA = {tool["function"]["name"]: tool["function"]["parameters"] for tool in TOOL_DEFINITIONS}
@@ -434,6 +448,16 @@ class LLMEngine:
         if "screenshot" in lower:
             return {"type": "function_call", "content": None, "function_name": "take_screenshot", "function_args": {"search_google": False}, "tool_call_id": "direct-intent-1"}
 
+        if lower.startswith("run command ") or lower.startswith("run: "):
+            cmd = msg.split(" ", 1)[1].strip()
+            return {
+                "type": "function_call",
+                "content": None,
+                "function_name": "execute_command",
+                "function_args": {"command": cmd},
+                "tool_call_id": "direct-intent-1",
+            }
+
         return None
 
     def _chat(self, messages: list, temperature: float = 0.7, include_tools: bool = True) -> Dict[str, Any]:
@@ -553,6 +577,9 @@ class LLMEngine:
         elif function_name == "open_application" and not args.get("app_name"):
             args["app_name"] = self._extract_search_query(user_message, ["open", "launch", "start"])
 
+        elif function_name == "execute_command" and not args.get("command"):
+            args["command"] = self._extract_search_query(user_message, ["run command", "run", "execute command", "execute"])
+
         # Final safeguard: required args should never be empty strings.
         for key in list(args.keys()):
             if isinstance(args[key], str):
@@ -564,6 +591,8 @@ class LLMEngine:
             if req not in args:
                 if req == "query":
                     args["query"] = user_message.strip()
+                elif req == "command":
+                    args["command"] = user_message.strip()
                 elif req == "action" and function_name == "search_youtube":
                     args["action"] = "search"
 

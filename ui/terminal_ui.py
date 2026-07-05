@@ -58,6 +58,7 @@ class TerminalUI:
         "[green]▸[/green] Explain [concept]",
         "[green]▸[/green] Create study plan for [topic]",
         "[green]▸[/green] Type this: [text]",
+        "[green]▸[/green] Run command: [command]",
         "",
         "[bright_cyan]═══ META ═══[/bright_cyan]",
         "[dim]voice[/dim]    — Voice input mode",
@@ -215,10 +216,69 @@ class TerminalUI:
         }
         self.face.set_state(state_map.get(status, "idle"))
 
+    def display_resource_hud(self):
+        """Display real-time system metrics (CPU, RAM, Disk, Temp) in a cyberpunk panel."""
+        try:
+            import psutil
+            cpu = psutil.cpu_percent()
+            ram = psutil.virtual_memory().percent
+            
+            try:
+                disk = psutil.disk_usage('/').percent
+            except Exception:
+                disk = 0.0
+
+            # Get CPU temperature safely
+            temp_val = None
+            if hasattr(psutil, "sensors_temperatures"):
+                try:
+                    temps = psutil.sensors_temperatures()
+                    for key in ['coretemp', 'cpu_thermal', 'acpitz']:
+                        if key in temps and temps[key]:
+                            temp_val = temps[key][0].current
+                            break
+                    if temp_val is None and temps:
+                        for val in temps.values():
+                            if val:
+                                temp_val = val[0].current
+                                break
+                except Exception:
+                    pass
+
+            def make_bar(pct: float, color: str) -> str:
+                filled = int(pct / 10)
+                empty = 10 - filled
+                return f"[{color}]{'■' * filled}[/{color}][dim]{'□' * empty}[/dim]"
+
+            cpu_bar = make_bar(cpu, "bright_green")
+            ram_bar = make_bar(ram, "bright_cyan")
+            disk_bar = make_bar(disk, "bright_magenta")
+            
+            temp_str = f"[bright_yellow]{temp_val:.1f}°C[/bright_yellow]" if temp_val is not None else "[dim]N/A[/dim]"
+            
+            hud_text = Text.from_markup(
+                f" [green]CPU[/green] {cpu:4.1f}% {cpu_bar}   "
+                f"[cyan]RAM[/cyan] {ram:4.1f}% {ram_bar}   "
+                f"[magenta]DSK[/magenta] {disk:4.1f}% {disk_bar}   "
+                f"[yellow]TMP[/yellow] {temp_str}"
+            )
+            
+            panel = Panel(
+                hud_text,
+                border_style="green",
+                title="[dim cyan]◈ system resources ◈[/dim cyan]",
+                title_align="left",
+                padding=(0, 1)
+            )
+            self.console.print(panel)
+        except Exception as e:
+            self.console.print(f"[dim red]System HUD Error: {e}[/dim red]")
+
     def refresh_display(self):
         """Refresh the full display."""
         self.clear()
         self.display_face_and_status()
+        self.display_resource_hud()
         self.display_conversation()
         self._display_input_prompt()
 
